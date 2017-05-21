@@ -1,10 +1,14 @@
 package com.narenph.simpleadd;
 
+import android.graphics.Outline;
 import android.os.CountDownTimer;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,26 +18,26 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button startButton;
+    FloatingActionButton startButton;
     RelativeLayout gameRelativeLayout;
-    TextView timerTextView;
-    TextView textView;
-    TextView questionText;
-    TextView resultText;
-    Button button0;
-    Button button1;
-    Button button2;
-    Button button3;
+    LinearLayout difGrid;
+    TextView timerTextView,textView,questionText,resultText,startText;
+    Button button0,button1,button2,button3;
     Button playAgainButton;
-    int score;
+    Button dif1,dif2,dif3;
+    int a,b,score,answer,incorrectAnswer;
     int totalQues;
     int locationOfAnswer;
-    ArrayList<Integer> answers= new ArrayList<Integer>();
+    boolean checker=true;
 
-    public void playAgain(View view){
+    ArrayList<Integer> answers= new ArrayList<Integer>();
+    public int difLevel;
+
+    public void playAgain(View view, int difLevel){
 
 
         playAgainButton.setVisibility(View.INVISIBLE);
+        gameRelativeLayout.setVisibility(View.VISIBLE);
         score=0;
         totalQues=0;
 
@@ -46,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
         textView.setText("0/0");
         resultText.setText("");
 
-        newQuestion();
+        Log.i("WAAAASUUUUP",Integer.toString(difLevel));
+        newQuestion(view, difLevel);
 
         CountDownTimer countDownTimer = new CountDownTimer(30100,1000) {
             @Override
@@ -67,24 +72,59 @@ public class MainActivity extends AppCompatActivity {
                 button2.setEnabled(false);
                 button3.setEnabled(false);
 
-
             }
         }.start();
 
     }
 
-    public void newQuestion(){
+    public void newQuestion(View view, int difLevel){
 
 
         Random rand = new Random();
 
-        int a = rand.nextInt(21);
-        int b = rand.nextInt(21);
+        Log.i("difLevel",Integer.toString(difLevel));
 
-        questionText.setText(Integer.toString(a) +" + "+Integer.toString(b));
+        a = rand.nextInt(difLevel);
+        b = rand.nextInt(difLevel);
+        int oper;
+        oper = rand.nextInt(4);
 
-        int answer =a+b;
-        int incorrectAnswer;
+            if(oper==0){
+                questionText.setText(Integer.toString(a) +" + "+Integer.toString(b));
+                answer=a+b;
+            }
+            if(oper==1){
+                questionText.setText(Integer.toString(a) +" - "+Integer.toString(b));
+                answer=a-b;
+
+            }
+            if(oper==2){
+                questionText.setText(Integer.toString(a) +" X "+Integer.toString(b));
+                answer=a*b;
+            }
+            if(oper==3){
+
+                while(checker){
+                    if((a>=b) && (a%b==0)) {
+                        Log.i("Printing out A and B", Integer.toString(a) + "  " + Integer.toString(b));
+                        answer = a / b;
+                        break;
+                    }
+
+                    else{
+                        a = rand.nextInt(difLevel);
+                        b = rand.nextInt(difLevel);
+                    }
+
+
+                }
+                questionText.setText(Integer.toString(a) +" / "+Integer.toString(b));
+
+            }
+
+
+
+
         locationOfAnswer=rand.nextInt(4);
         answers.clear();
         for(int i=0;i<4;i++){
@@ -95,10 +135,10 @@ public class MainActivity extends AppCompatActivity {
             }
             else{
 
-                incorrectAnswer=rand.nextInt(41);
+                incorrectAnswer=rand.nextInt((2*difLevel)-1);
                 while (incorrectAnswer == answer){
 
-                    incorrectAnswer=rand.nextInt(41);
+                    incorrectAnswer=rand.nextInt((2*difLevel)-1);
 
                 }
                 answers.add(incorrectAnswer);
@@ -111,10 +151,10 @@ public class MainActivity extends AppCompatActivity {
         button2.setText(Integer.toString(answers.get(2)));
         button3.setText(Integer.toString(answers.get(3)));
 
+        Log.i("WOOHOOOO",Integer.toString(difLevel));
     }
 
     public void checkAnswer(View view){
-
 
 
         if(Integer.toString(locationOfAnswer).equals(view.getTag().toString())){
@@ -131,17 +171,44 @@ public class MainActivity extends AppCompatActivity {
 
         totalQues++;
         textView.setText(Integer.toString(score)+"/"+Integer.toString(totalQues));
-        newQuestion();
+        Log.i("HELOOOOOO",Integer.toString(difLevel));
+        newQuestion(view, difLevel);
 
+    }
 
+    public void setDiff1(View view){
+
+        difLevel=21;
+        gameRelativeLayout.setVisibility(View.VISIBLE);
+        difGrid.setVisibility(View.INVISIBLE);
+        playAgain(view, difLevel);
+
+    }
+
+    public void setDiff2(View view){
+
+        difLevel=41;
+        gameRelativeLayout.setVisibility(View.VISIBLE);
+        difGrid.setVisibility(View.INVISIBLE);
+        playAgain(view, difLevel);
+
+    }
+
+    public void setDiff3(View view){
+
+        difLevel=61;
+        gameRelativeLayout.setVisibility(View.VISIBLE);
+        difGrid.setVisibility(View.INVISIBLE);
+        playAgain(view, difLevel);
 
     }
 
     public void startGame(View view){
 
         startButton.setVisibility(view.INVISIBLE);
-        gameRelativeLayout.setVisibility(View.VISIBLE);
-        playAgain(findViewById(R.id.startButton));
+        startText.setVisibility(View.INVISIBLE);
+        gameRelativeLayout.setVisibility(View.INVISIBLE);
+        difGrid.setVisibility(View.VISIBLE);
 
     }
 
@@ -150,9 +217,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startButton=(Button)findViewById(R.id.startButton);
+
         gameRelativeLayout=(RelativeLayout)findViewById(R.id.gameRelativeLayout);
+        difGrid= (LinearLayout)findViewById(R.id.difGrid);
         timerTextView = (TextView)findViewById(R.id.timerTextView);
+        startText = (TextView)findViewById(R.id.startText);
         textView = (TextView)findViewById(R.id.textView);
         questionText = (TextView)findViewById(R.id.questionText);
         resultText = (TextView)findViewById(R.id.resultText);
@@ -160,8 +229,18 @@ public class MainActivity extends AppCompatActivity {
         button1 = (Button)findViewById(R.id.button2);
         button2 = (Button)findViewById(R.id.button3);
         button3 = (Button)findViewById(R.id.button4);
+        dif1 = (Button)findViewById(R.id.dif1);
+        dif2 = (Button)findViewById(R.id.dif2);
+        dif3 = (Button)findViewById(R.id.dif3);
+
         playAgainButton = (Button)findViewById(R.id.playAgainButton);
 
+        startButton = (FloatingActionButton) findViewById(R.id.startButton);
+        startButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                startGame(view);
+            }
+        });
 
 
     }
